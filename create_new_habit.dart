@@ -3,7 +3,7 @@
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_project/daily_view.dart';
-import 'package:habit_project/homePage.dart';
+// import 'package:habit_project/homePage.dart';
 import 'package:habit_project/monthly_view.dart';
 import 'package:habit_project/saveData.dart';
 import 'package:habit_project/styles.dart';
@@ -200,8 +200,8 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                           const SnackBar(
                               content: Text("Your Habit added sucssefully.")),
                         );
-                        Navigator.of(context).pushReplacement(MaterialPageRoute(
-                            builder: (context) => const HomePage()));
+                        // Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        //     builder: (context) => const HomePage()));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
