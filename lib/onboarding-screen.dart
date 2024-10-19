@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:habitflow_depi/home/weekly.dart';
-import 'package:habitflow_depi/onboarding/onboarding-builder.dart';
-import 'package:habitflow_depi/onboarding/onboarding-model.dart';
+import 'package:project_app/onboarding-builder.dart';
+import 'package:project_app/onboarding-model.dart';
+import 'package:project_app/weeklyscreen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends StatefulWidget {

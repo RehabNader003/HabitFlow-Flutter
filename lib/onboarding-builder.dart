@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habitflow_depi/onboarding/onboarding-model.dart';
+import 'package:project_app/onboarding-model.dart';
+
 
 class OnboardingBuilder extends StatelessWidget {
   final OnBoardingModel onBoardingModel; // Ensure this is a required field

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import '../../onboarding/onboarding-screen.dart';
+import 'package:project_app/onboarding-screen.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
