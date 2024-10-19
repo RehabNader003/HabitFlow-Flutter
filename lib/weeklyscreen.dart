@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore import
-import 'package:collection/collection.dart'; // For groupBy
+// For groupBy
 
 class WeeklyHabitsScreen extends StatelessWidget {
   WeeklyHabitsScreen({super.key});
   final CollectionReference habitCollection =
-  FirebaseFirestore.instance.collection('daily');
+      FirebaseFirestore.instance.collection('daily');
 
   @override
   Widget build(BuildContext context) {
@@ -23,11 +23,14 @@ class WeeklyHabitsScreen extends StatelessWidget {
         stream: habitCollection.snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator()); // Loading spinner
+            return const Center(
+                child: CircularProgressIndicator()); // Loading spinner
           } else if (snapshot.hasError) {
-            return const Center(child: Text('Error fetching habits')); // Error handling
+            return const Center(
+                child: Text('Error fetching habits')); // Error handling
           } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No habits found')); // No data handling
+            return const Center(
+                child: Text('No habits found')); // No data handling
           }
 
           // List to hold all habits grouped by individual days
@@ -82,7 +85,8 @@ class WeeklyHabitsScreen extends StatelessWidget {
                             fontSize: 18,
                           ),
                         ),
-                        subtitle: Text(habit['description'] ?? 'No description'), // Display description
+                        subtitle: Text(habit['description'] ??
+                            'No description'), // Display description
                       );
                     }).toList(),
                   ),

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:project_app/onboarding-model.dart';
 
-
 class OnboardingBuilder extends StatelessWidget {
   final OnBoardingModel onBoardingModel; // Ensure this is a required field
 
-  OnboardingBuilder({super.key, required this.onBoardingModel});
+  const OnboardingBuilder({super.key, required this.onBoardingModel});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +15,7 @@ class OnboardingBuilder extends StatelessWidget {
         children: [
           Image.asset(
             "${onBoardingModel.pic}",
-                    ),
+          ),
           const SizedBox(height: 25),
           Text(
             "${onBoardingModel.title}",
@@ -27,8 +26,7 @@ class OnboardingBuilder extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             "${onBoardingModel.disc}",
-            style: const TextStyle(
-                fontSize: 18, color: Colors.black54),
+            style: const TextStyle(fontSize: 18, color: Colors.black54),
             textAlign: TextAlign.center,
           ),
         ],

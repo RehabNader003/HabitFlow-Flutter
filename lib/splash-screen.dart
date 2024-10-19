@@ -5,6 +5,8 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:project_app/onboarding-screen.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
@@ -34,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
               backgroundColor: Color(0xFFFFFFFF),
               child: CircleAvatar(
                 radius: 88,
-                backgroundImage:AssetImage("assets/images/Creativity.gif") ,
+                backgroundImage: AssetImage("assets/images/Creativity.gif"),
               ),
             ),
             SizedBox(height: 25),
@@ -47,7 +49,8 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             SizedBox(height: 25),
-          SpinKitFadingCircle( // Loading spinner
+            SpinKitFadingCircle(
+              // Loading spinner
               color: Colors.white,
               size: 50.0,
             ),

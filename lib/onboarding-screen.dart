@@ -5,6 +5,8 @@ import 'package:project_app/weeklyscreen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -34,26 +36,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     const SizedBox(
                       height: 50,
                     ),
-                  OnboardingBuilder(
-                  onBoardingModel: data[index],
-                ),
-                const SizedBox(
-                height: 15,
-                ),
-                SmoothPageIndicator(
-                controller: _pageController,
-                count: data.length,
-                axisDirection: Axis.horizontal,
-                effect:  const WormEffect(
-                dotHeight: 10,
-                dotWidth: 10,
-                activeDotColor: Color(0xFF8985E9),
-                ),
-                ),
-                const SizedBox(
-                height: 15,
-                ),
-                ],
+                    OnboardingBuilder(
+                      onBoardingModel: data[index],
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                    SmoothPageIndicator(
+                      controller: _pageController,
+                      count: data.length,
+                      axisDirection: Axis.horizontal,
+                      effect: const WormEffect(
+                        dotHeight: 10,
+                        dotWidth: 10,
+                        activeDotColor: Color(0xFF8985E9),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 15,
+                    ),
+                  ],
                 );
               },
             ),
@@ -66,17 +68,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 currentPage != data.length - 1
-                ? TextButton(
-                    onPressed: () {
-                    _pageController.animateToPage(data.length - 1,
-                        duration: const Duration(milliseconds: 400),
-                        curve: Curves.easeIn);
-                  },
-                    child: const Text(
-                    'Skip',
-                    style: TextStyle(fontSize: 20, color: Color(0xFF8985E9)),
-                  ),
-                )
+                    ? TextButton(
+                        onPressed: () {
+                          _pageController.animateToPage(data.length - 1,
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeIn);
+                        },
+                        child: const Text(
+                          'Skip',
+                          style:
+                              TextStyle(fontSize: 20, color: Color(0xFF8985E9)),
+                        ),
+                      )
                     : Container(),
                 ElevatedButton(
                   onPressed: () {
@@ -97,8 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   },
                   child: Text(
                     currentPage == data.length - 1 ? 'Get Started' : 'Continue',
-                    style: const TextStyle(
-                        fontSize: 20),
+                    style: const TextStyle(fontSize: 20),
                   ),
                 ),
               ],
