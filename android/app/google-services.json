@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "773255757835",
+    "project_id": "habitapp-c9814",
+    "storage_bucket": "habitapp-c9814.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773255757835:android:dd17e09375701ae3c2070e",
+        "android_client_info": {
+          "package_name": "com.example.habit_flow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZQzcov7f6pH7qX91cWPv0fusiyX7rrGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773255757835:android:4c3aa3b93888dc26c2070e",
+        "android_client_info": {
+          "package_name": "com.example.habit_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZQzcov7f6pH7qX91cWPv0fusiyX7rrGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:773255757835:android:c92ed793a7dfa9bdc2070e",
+        "android_client_info": {
+          "package_name": "com.example.project_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDZQzcov7f6pH7qX91cWPv0fusiyX7rrGM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
