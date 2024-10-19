@@ -1,13 +1,11 @@
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore import
 import 'package:collection/collection.dart'; // For groupBy
 
 class WeeklyHabitsScreen extends StatelessWidget {
-   WeeklyHabitsScreen({super.key});
+  WeeklyHabitsScreen({super.key});
   final CollectionReference habitCollection =
   FirebaseFirestore.instance.collection('daily');
-
 
   @override
   Widget build(BuildContext context) {
@@ -32,16 +30,22 @@ class WeeklyHabitsScreen extends StatelessWidget {
             return const Center(child: Text('No habits found')); // No data handling
           }
 
-          // Group habits by the day of the week
-          var habitsByDay = groupBy(
-            snapshot.data!.docs.where((doc) {
-              List<int> repeatDays = List<int>.from(doc['repeat_days']);
-              return repeatDays.length < 6;
-            }),
-                (QueryDocumentSnapshot doc) {
-              return doc['repeat_days'] as int; // Assuming 'repeat_days' is int
-            },
-          );
+          // List to hold all habits grouped by individual days
+          Map<int, List<QueryDocumentSnapshot>> habitsByDay = {};
+
+          // Iterate through each document and add the habit to each day it repeats on
+          for (var doc in snapshot.data!.docs) {
+            List<dynamic> repeatDays = doc['repeat_days'] as List<dynamic>;
+            for (var day in repeatDays) {
+              if (day is int) {
+                if (habitsByDay.containsKey(day)) {
+                  habitsByDay[day]!.add(doc);
+                } else {
+                  habitsByDay[day] = [doc];
+                }
+              }
+            }
+          }
 
           return ListView.builder(
             itemCount: habitsByDay.keys.length,
