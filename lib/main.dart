@@ -1,66 +1,139 @@
-// ignore_for_file: avoid_print
-
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:project_app/create_new_habit.dart';
-import 'package:project_app/notification.dart';
+import 'package:habits_app/habits/ReportPage.dart';
+import 'package:habits_app/today.dart';
+import 'package:habits_app/weekly.dart';
+import 'habits/AccountPage.dart';
+import 'HomePage.dart';
+import 'monthly.dart';
+import 'habits/MyHabitsPage.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-
-  NotificationHandler.init();
-  runApp(const MyApp());
+void main() {
+  runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
-
+class MyApp extends StatelessWidget {
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: HomeScreen(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+
+  late TabController _tabController;
+  int _selectedIndex = 0; // Track the currently selected bottom navigation tab
+
+  // List of pages to navigate
+  final List<Widget> _pages = [
+    HomePage(),
+    ReportPage(),
+    MyHabitsPage(),
+    AccountPage(),
+  ];
+
   @override
   void initState() {
     super.initState();
-    myRequestPermission();
-    getToken();
+
+    _tabController = TabController(length: 3, vsync: this);
   }
 
-  Future<void> myRequestPermission() async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    NotificationSettings settings = await messaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('User granted permission');
-    } else if (settings.authorizationStatus ==
-        AuthorizationStatus.provisional) {
-      print('User granted provisional permission');
-    } else {
-      print('User declined or has not accepted permission');
-    }
-  }
-
-  Future<void> getToken() async {
-    String? myToken = await FirebaseMessaging.instance.getToken();
-    print("FCM Token: $myToken");
+  // Function to handle navigation bar tap
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: CreateHabitScreen(),
+    return Scaffold(
+      appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {},
+          ),
+        ],
+        leading: Icon(Icons.checklist),
+        centerTitle: true,
+        title: Text(
+          "Home",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        bottom: _selectedIndex == 0  ? TabBar(  // Show TabBar only on Home Page
+          indicator: BoxDecoration(
+            color: Color(0xFFBA68C8),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          controller: _tabController,
+          tabs: [
+            Tab(text: '     Today      '),
+            Tab(text: '     Weekly     '),
+            Tab(text: '     Monthly    '),
+          ],
+        )
+            : null, // Remove TabBar on other pages
+      ),
+      body: _selectedIndex == 0
+          ? TabBarView(
+        controller: _tabController,
+        children: [
+          Today(), // Custom widget for 'Today' tab
+          Weekly(), // Custom widget for 'Weekly' tab
+          Monthly(), // Custom widget for 'Monthly' tab
+        ],
+      )
+          : _pages[_selectedIndex], // Display the page based on selected tab
+
+      bottomNavigationBar: BottomNavigationBar(
+        selectedItemColor: Colors.purple,
+        currentIndex: _selectedIndex, // Update the selected index
+        onTap: _onItemTapped, // Add the onTap callback
+        items: const [
+          BottomNavigationBarItem(
+            backgroundColor: Colors.white,
+            icon: Icon(Icons.home, color: Colors.purple),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.bar_chart, color: Colors.purple),
+            label: 'Report',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_customize_outlined, color: Colors.purple),
+            label: 'My Habits',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_circle, color: Colors.purple),
+            label: 'Account',
+          ),
+        ],
+      ),
+      floatingActionButton:_selectedIndex==0? FloatingActionButton(
+        onPressed: () {},
+        child: Icon(
+          Icons.add,
+          size: 30,
+        ), // The + icon
+        backgroundColor: Color(0xFFBA68C8),
+        shape: CircleBorder(),
+      ): SizedBox.shrink(),
     );
   }
 }
+
+
+
+
+
+
+
