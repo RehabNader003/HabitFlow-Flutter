@@ -5,10 +5,20 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:project_app/create_new_habit.dart';
 import 'package:project_app/notification.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:habit_flow/api/firebase_api.dart';
+import 'package:habit_flow/page/home_page.dart';
+import 'firebase_options.dart'; // Import the generated firebase_options.dart file
+import 'notification_service.dart';
+import 'Taskservice.dart';
+import 'dart:async'; // Import Timer
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   NotificationHandler.init();
   runApp(const MyApp());
@@ -60,7 +70,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: CreateHabitScreen(),
+      home: home_page(),
     );
   }
 }
