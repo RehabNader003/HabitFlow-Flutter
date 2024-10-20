@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
               backgroundColor: Color(0xFFFFFFFF),
               child: CircleAvatar(
                 radius: 88,
-                backgroundImage: AssetImage("assets/images/Creativity.gif"),
+                backgroundImage: AssetImage("assets/images/splashicon.gif"),
               ),
             ),
             SizedBox(height: 25),
