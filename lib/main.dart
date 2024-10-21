@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:project_app/create_new_habit.dart';
 import 'package:project_app/notification.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:habit_flow/api/firebase_api.dart';
-import 'package:habit_flow/page/home_page.dart';
+
+import 'package:project_app/page/home_page.dart';
 import 'firebase_options.dart'; // Import the generated firebase_options.dart file
 import 'notification_service.dart';
 import 'Taskservice.dart';
@@ -69,8 +69,8 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: home_page(),
+    return  MaterialApp(
+      home:  HomePage(),
     );
   }
 }
