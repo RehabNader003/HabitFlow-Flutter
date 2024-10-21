@@ -90,7 +90,7 @@ class _DailyViewState extends State<DailyView> {
                 style: TextButton.styleFrom(
                   minimumSize: const Size(10, 10),
                   backgroundColor:
-                      isDayTapped[index] ? Colors.purple : Colors.white,
+                      isDayTapped[index] ?Color(0xFF8985E9) : Colors.white,
                   foregroundColor:
                       isDayTapped[index] ? Colors.white : Colors.black,
                   padding: const EdgeInsets.all(16),
@@ -98,7 +98,7 @@ class _DailyViewState extends State<DailyView> {
                     borderRadius: BorderRadius.circular(10),
                     side: BorderSide(
                         color:
-                            isDayTapped[index] ? Colors.purple : Colors.grey),
+                            isDayTapped[index] ? Color(0xFF8985E9) : Colors.grey),
                   ),
                 ),
                 child: Text(day, style: const TextStyle(fontSize: 16)),
@@ -144,12 +144,12 @@ class _DailyViewState extends State<DailyView> {
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.access_time, color: Colors.purple),
+                      const Icon(Icons.access_time, color: Color(0xFF8985E9)),
                       const SizedBox(width: 8),
                       Text(selectedTime.format(context)),
                     ],
                   ),
-                  const Icon(Icons.edit, color: Colors.purple), // Edit icon
+                  const Icon(Icons.edit, color: Color(0xFF8985E9)), // Edit icon
                 ],
               ),
             ),
