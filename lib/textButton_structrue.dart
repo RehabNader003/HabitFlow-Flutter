@@ -22,14 +22,14 @@ class TextButtonStructure extends StatelessWidget {
       },
       style: TextButton.styleFrom(
         minimumSize: const Size(8, 8),
-        backgroundColor: isTapped ? Colors.purple : Colors.grey[300],
+        backgroundColor: isTapped ? Color(0xFF8985E9) : Colors.grey[300],
         foregroundColor:
             isTapped ? Colors.white : const Color.fromARGB(255, 26, 25, 25),
         padding: const EdgeInsets.all(16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(13),
           side: BorderSide(
-            color: isTapped ? Colors.purple : Colors.grey,
+            color: isTapped ? Color(0xFF8985E9) : Colors.grey,
           ),
         ),
       ),
