@@ -1,11 +1,10 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart'; // لاستخدام Firebase Storage
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart'; // لاختيار التاريخ
 import 'package:file_picker/file_picker.dart';
-import 'package:tracking_habits/Register.dart'; // مكتبة لاختيار الصور
+import 'package:firebase_storage/firebase_storage.dart'; // استيراد مكتبة Firebase Storage
+import 'package:tracking_habits/Register.dart'; // مكتبة الانتقال إلى صفحة التسجيل
 
 final genderController = TextEditingController();
 
@@ -24,8 +23,43 @@ class _ProfilePageState extends State<ProfilePage> {
   String? selectedGender; // لتخزين الجنس
   DateTime? selectedDate; // لتخزين تاريخ الميلاد
   String? selectedImagePath; // لتخزين مسار الصورة المحددة
-  final FirebaseAuth _auth = FirebaseAuth.instance; // متغير FirebaseAuth
-  final FirebaseStorage _storage = FirebaseStorage.instance; // متغير FirebaseStorage
+
+  // وظيفة لاختيار الصورة
+  Future<void> pickImage() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      allowMultiple: false,
+    );
+
+    if (result != null && result.files.isNotEmpty) {
+      setState(() {
+        selectedImagePath = result.files.single.path; // تخزين مسار الصورة المحددة
+      });
+      // قم بتحميل الصورة إلى Firebase Storage
+      await uploadImage(selectedImagePath!);
+    }
+  }
+
+  // وظيفة لتحميل الصورة إلى Firebase Storage
+  Future<void> uploadImage(String path) async {
+    final file = File(path);
+    final storageRef = FirebaseStorage.instance.ref();
+    final imageRef = storageRef.child('profile_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+
+    await imageRef.putFile(file);
+    final downloadUrl = await imageRef.getDownloadURL();
+    
+    setState(() {
+      imagePath = downloadUrl; // تخزين URL الصورة المحملة
+      saveImagePath(downloadUrl); // حفظ URL الصورة في SharedPreferences
+    });
+  }
+
+  // حفظ المسار في SharedPreferences
+  Future<void> saveImagePath(String path) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('imagePath', path); // حفظ URL الصورة
+  }
 
   @override
   void initState() {
@@ -42,52 +76,6 @@ class _ProfilePageState extends State<ProfilePage> {
       phone = prefs.getString('phone');
       imagePath = prefs.getString('imagePath'); // تحميل الصورة المحفوظة
     });
-  }
-
-  // وظيفة لاختيار الصورة
-  Future<void> pickImage() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      allowMultiple: false,
-    );
-
-    if (result != null && result.files.isNotEmpty) {
-      setState(() {
-        selectedImagePath = result.files.single.path; // تخزين مسار الصورة المحددة
-      });
-
-      // رفع الصورة إلى Firebase Storage
-      await uploadImageToFirebase(selectedImagePath!);
-    }
-  }
-
-  // رفع الصورة إلى Firebase Storage
-  Future<void> uploadImageToFirebase(String path) async {
-    File file = File(path);
-    try {
-      // استخدام الـ uid الخاص بالمستخدم كاسم للصورة
-      String fileName = '${_auth.currentUser?.uid}.jpg';
-      Reference ref = _storage.ref().child('profile_images/$fileName');
-      await ref.putFile(file); // رفع الصورة
-      String downloadUrl = await ref.getDownloadURL(); // الحصول على رابط الصورة
-
-      // حفظ الرابط في SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('imagePath', downloadUrl);
-
-      setState(() {
-        imagePath = downloadUrl; // تحديث مسار الصورة
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Image uploaded successfully!'),
-      ));
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Error uploading image: $e'),
-      ));
-    }
   }
 
   // وظيفة لاختيار التاريخ
@@ -113,24 +101,12 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: AppBar(
         title: const Text(
           "Personal Information",
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold , color: Colors.black),
         ),
-        backgroundColor: Colors.teal,
         centerTitle: true,
       ),
       body: Stack(
         children: [
-          // الخلفية: صورة تغطي الشاشة بالكامل
-          Container(
-            width: double.infinity,
-            height: screenSize.height,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/profile.jpg"),
-                fit: BoxFit.cover, // تغطية الشاشة بالكامل بالصورة
-              ),
-            ),
-          ),
           // المحتوى فوق الخلفية
           SingleChildScrollView(
             child: Padding(
@@ -138,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 170),
+                  const SizedBox(height: 50),
                   // صورة الملف الشخصي
                   Center(
                     child: Stack(
@@ -146,10 +122,12 @@ class _ProfilePageState extends State<ProfilePage> {
                         CircleAvatar(
                           radius: 60,
                           backgroundColor: Colors.grey[300],
-                          backgroundImage: imagePath != null
-                              ? NetworkImage(imagePath!) // استخدام الصورة من Firebase
-                              : null,
-                          child: imagePath == null
+                          backgroundImage: selectedImagePath != null
+                              ? FileImage(File(selectedImagePath!)) // استخدام الصورة التي تم اختيارها
+                              : imagePath != null
+                                  ? NetworkImage(imagePath!) // تحميل الصورة المحفوظة
+                                  : null,
+                          child: imagePath == null && selectedImagePath == null
                               ? const Icon(Icons.person, size: 60, color: Colors.white)
                               : null,
                         ),
@@ -157,7 +135,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           bottom: 0,
                           right: 0,
                           child: IconButton(
-                            icon: const Icon(Icons.camera_alt, color: Colors.teal, size: 30),
+                            icon: const Icon(Icons.camera_alt, color: Colors.white, size: 30 ),
                             onPressed: pickImage,
                             tooltip: "Edit Profile Image",
                           ),
@@ -204,7 +182,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             filled: true,
-                            fillColor: Colors.teal[50],
+                            fillColor: Colors.grey[50],
                           ),
                           onChanged: (String? newValue) {
                             setState(() {
@@ -231,10 +209,10 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                           decoration: InputDecoration(
                             labelText: "BirthDate",
-                            suffixIcon: const Icon(Icons.calendar_today, color: Colors.teal),
+                            suffixIcon: const Icon(Icons.calendar_month, color: Colors.black),
                             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                             filled: true,
-                            fillColor: Colors.teal[50],
+                            fillColor: Colors.grey[50],
                           ),
                           readOnly: true, // لمنع المستخدم من كتابة التاريخ يدوياً
                           onTap: () => _selectDate(context),
@@ -244,17 +222,15 @@ class _ProfilePageState extends State<ProfilePage> {
                         // زر تسجيل الخروج
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.teal,
+                            backgroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 5),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () async {
-                            // قم بتسجيل خروج المستخدم
-                            await _auth.signOut();
+                          onPressed: () {
                             Navigator.of(context).pop(); 
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => const Register()));
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => Register()));
                           },
                           child: const Text(
                             "Log Out",
@@ -276,7 +252,7 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget buildInfoText(String text, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Colors.teal),
+        Icon(icon, color: Colors.black),
         const SizedBox(width: 10),
         Text(
           text,
