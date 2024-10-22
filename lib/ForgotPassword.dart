@@ -10,12 +10,10 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final emailController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance; // إنشاء مثيل لـ FirebaseAuth
+  final FirebaseAuth _auth = FirebaseAuth.instance; // إضافة FirebaseAuth
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -110,7 +108,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 const SizedBox(height: 20),
                 MaterialButton(
                   onPressed: () async {
-                    final email = emailController.text;
+                    final email = emailController.text.trim();
                     if (email.isNotEmpty) {
                       try {
                         await _auth.sendPasswordResetEmail(email: email); // إرسال رابط إعادة تعيين كلمة المرور
@@ -119,10 +117,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                             content: Text("A password reset link has been sent to $email"),
                           ),
                         );
+                        emailController.clear(); // مسح حقل الإدخال
                       } catch (e) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Error sending email. Please try again."),
+                          SnackBar(
+                            content: Text("Error: ${e.toString()}"),
                           ),
                         );
                       }
