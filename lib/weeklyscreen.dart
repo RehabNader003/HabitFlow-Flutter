@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // Firebase Firestore import
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:project_app/habitDialog.dart'; // Firebase Auth import
 
 class WeeklyHabitsScreen extends StatelessWidget {
   WeeklyHabitsScreen({super.key});
 
   final CollectionReference habitCollection =
-  FirebaseFirestore.instance.collection('daily');
+      FirebaseFirestore.instance.collection('daily');
 
   @override
   Widget build(BuildContext context) {
+    final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Weekly'),
-        backgroundColor: const Color(0xFF8985E9),
-        centerTitle: true,
-        titleTextStyle: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 22,
-        ),
-      ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: habitCollection.snapshots(),
+        stream: userId != null
+            ? habitCollection
+                .where("user_id", isEqualTo: userId)
+                .snapshots() // Filter by user ID
+            : const Stream.empty(), // Empty stream if user is not signed in
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -34,59 +33,71 @@ class WeeklyHabitsScreen extends StatelessWidget {
           final habitsByDay = _groupHabitsByDay(snapshot.data!.docs);
 
           return ListView.builder(
-            itemCount: habitsByDay.keys.length,
-            itemBuilder: (context, index) {
-              int day = habitsByDay.keys.elementAt(index);
-              List<QueryDocumentSnapshot> habitsForDay = habitsByDay[day]!;
-              String dayName = _getDayName(day);
+              itemCount: habitsByDay.keys.length,
+              itemBuilder: (context, index) {
+                int day = habitsByDay.keys.elementAt(index);
+                List<QueryDocumentSnapshot> habitsForDay = habitsByDay[day]!;
+                String dayName = _getDayName(day);
 
-              return Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Card(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: ExpansionTile(
-                    textColor: const Color(0xFFFFFFFF),
-                    backgroundColor: const Color(0xFF8985E9),
-                    title: Text(
-                      dayName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+                return Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                    children: habitsForDay.map((habit) {
-                      // Fetch the color from the Firestore document
-                      int colorValue = habit['color'] ?? 0xFFFFFFFF; // Default to white if no color is found
-
-                      return Container(
-                        color: Color(colorValue), // Apply background color
-                        child: ListTile(
-                          title: Text(
-                            habit['task_name'] ?? 'Unknown',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              color: Colors.white, // Text color on colored background
-                            ),
-                          ),
-                          subtitle: Text(
-                            habit['description'] ?? 'No description',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.white70),
+                      child: ExpansionTile(
+                        title: Text(
+                          dayName,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              );
-            },
-          );
+                        children: habitsForDay.map((habit) {
+                          // Fetch the color from the Firestore document
+                          int colorValue = habit['color'] ?? 0xFFFFFFFF;
+
+                          return GestureDetector(
+                            onLongPress: () {
+                              // Show dialog with options using the HabitOptionsDialog class
+                              HabitOptionsDialog.showHabitOptionsDialog(
+                                context,
+                                habit.id,
+                                habit['task_name'],
+                                () => HabitOptionsDialog().editHabit(
+                                    context, habit.id, "daily"), // Edit function
+                                () => HabitOptionsDialog().deleteHabit(
+                                    context, habit.id, "daily"),
+                                   "daily",
+                                // Delete function
+                              );
+                            },
+                            child: Container(
+                              color: Color(colorValue),
+                              child: ListTile(
+                                title: Text(
+                                  habit['task_name'] ?? 'Unknown',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  habit['description'] ?? 'No description',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ));
+              });
         },
       ),
     );
@@ -112,10 +123,9 @@ class WeeklyHabitsScreen extends StatelessWidget {
     return habitsByDay;
   }
 
-  /// Returns the name of the day based on an integer.
   String _getDayName(int day) {
     const dayNames = [
-      'Unknown', // Placeholder for index 0 (if needed)
+      'Unknown',
       'Sunday',
       'Monday',
       'Tuesday',

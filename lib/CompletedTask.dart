@@ -1,11 +1,11 @@
-
 import 'package:flutter/material.dart';
 
 class CompletedTask extends StatelessWidget {
   final String TaskName;
   final Color TaskColor;
 
-  CompletedTask({required this.TaskName, required this.TaskColor});
+  const CompletedTask(
+      {super.key, required this.TaskName, required this.TaskColor});
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +21,10 @@ class CompletedTask extends StatelessWidget {
         children: [
           Text(
             TaskName,
-            style: TextStyle(
+            style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
           ),
-          Icon(Icons.check_circle, color: Colors.white),
+          const Icon(Icons.check_circle, color: Colors.white),
         ],
       ),
     );

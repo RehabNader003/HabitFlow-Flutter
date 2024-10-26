@@ -25,7 +25,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             color: Colors.white,
           ),
         ),
-        backgroundColor: const Color.fromARGB(255, 163, 70, 240),
+        backgroundColor: const Color.fromARGB(255, 216, 138, 151),
         centerTitle: true,
       ),
       body: Stack(
@@ -36,12 +36,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             height: double.infinity,
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: AssetImage("assets/images/cute.jpg"),
+                image: AssetImage("assets/images/background.jpg"),
                 fit: BoxFit.cover,
               ),
             ),
           ),
-          // محتوى النصوص والحقول
           Padding(
             padding: const EdgeInsets.all(20.0),
             child: Column(
@@ -57,7 +56,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     color: Colors.white,
                     shadows: [
                       Shadow(
-                        color: Color.fromARGB(255, 163, 70, 240),
+                        color: Color.fromARGB(255, 201, 160, 220),
                         offset: Offset(2, 2),
                         blurRadius: 3.0,
                       ),
@@ -76,13 +75,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       color: Colors.white,
                       shadows: [
                         Shadow(
-                          color: Color.fromARGB(255, 163, 70, 240),
+                          color: Color.fromARGB(255, 201, 160, 220),
                           offset: Offset(2, 2),
                           blurRadius: 3.0,
                         ),
                       ],
                     ),
-                    prefixIcon: const Icon(Icons.email, color: Color.fromARGB(255, 163, 70, 240)),
+                    prefixIcon: const Icon(Icons.email,
+                        color: Color.fromARGB(255, 241, 194, 125)),
                     filled: true,
                     fillColor: Colors.white.withOpacity(0.7),
                     border: OutlineInputBorder(
@@ -91,7 +91,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(
-                        color: Color.fromARGB(255, 163, 70, 240),
+                        color: Color.fromARGB(255, 211, 170, 232),
                       ),
                     ),
                   ),
@@ -99,7 +99,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   validator: (value) {
                     if (value == null ||
                         value.isEmpty ||
-                        !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                        !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                            .hasMatch(value)) {
                       return "Enter a valid email";
                     }
                     return null;
@@ -111,10 +112,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     final email = emailController.text.trim();
                     if (email.isNotEmpty) {
                       try {
-                        await _auth.sendPasswordResetEmail(email: email); // إرسال رابط إعادة تعيين كلمة المرور
+                        await _auth.sendPasswordResetEmail(
+                            email: email); // إرسال رابط إعادة تعيين كلمة المرور
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text("A password reset link has been sent to $email"),
+                            content: Text(
+                                "A password reset link has been sent to $email"),
                           ),
                         );
                         emailController.clear(); // مسح حقل الإدخال
@@ -133,9 +136,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       );
                     }
                   },
-                  color: const Color.fromARGB(255, 163, 70, 240),
+                  color: const Color.fromARGB(255, 216, 138, 151),
                   textColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),

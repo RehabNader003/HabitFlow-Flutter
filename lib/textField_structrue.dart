@@ -24,6 +24,10 @@ class TextfieldStructrue extends StatelessWidget {
           ),
         ),
         TextField(
+          onChanged: (val) {
+            hintText = val;
+            print(val);
+          },
           controller: controller,
           style: const TextStyle(
             color: Colors.black,

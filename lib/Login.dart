@@ -1,11 +1,11 @@
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tracking_habits/ForgotPassword.dart';
-import 'package:tracking_habits/Register.dart';
-import 'package:tracking_habits/profile.dart';
+import 'package:project_app/ForgotPassword.dart';
+// import 'package:project_app/HomePage.dart';
+import 'package:project_app/Register.dart';
 
-final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 bool rememberMe = false; // State for checkbox
 
 class Login extends StatefulWidget {
@@ -16,9 +16,12 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  final GlobalKey<FormState> _formLoginKey = GlobalKey<FormState>();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
+
+  final bool _isLoading = false; // State for loading indicator
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +30,7 @@ class _LoginState extends State<Login> {
         children: [
           Center(
             child: Image.asset(
-              "assets/images/login.jpg",
+              "assets/images/background.jpg",
               height: 1000,
               width: 1000,
               fit: BoxFit.cover,
@@ -37,7 +40,7 @@ class _LoginState extends State<Login> {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
               child: Form(
-                key: _formKey,
+                key: _formLoginKey,
                 child: SingleChildScrollView(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -47,11 +50,10 @@ class _LoginState extends State<Login> {
                         "Welcome Back!👋",
                         style: TextStyle(
                           fontSize: 24,
-                          fontFamily: 'RobotoMono',
                           color: Colors.white,
                           shadows: [
                             Shadow(
-                              color: Color.fromARGB(255, 163, 70, 240),
+                              color: Color.fromARGB(255, 201, 160, 220),
                               offset: Offset(2, 2),
                               blurRadius: 3.0,
                             ),
@@ -65,11 +67,10 @@ class _LoginState extends State<Login> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 17,
-                          fontFamily: 'RobotoMono',
                           color: Colors.white,
                           shadows: [
                             Shadow(
-                              color: Color.fromARGB(255, 163, 70, 240),
+                              color: Color.fromARGB(255, 201, 160, 220),
                               offset: Offset(2, 2),
                               blurRadius: 3.0,
                             ),
@@ -85,11 +86,10 @@ class _LoginState extends State<Login> {
                           "Email",
                           style: TextStyle(
                             fontSize: 17,
-                            fontFamily: 'RobotoMono',
                             color: Colors.white,
                             shadows: [
                               Shadow(
-                                color: Color.fromARGB(255, 163, 70, 240),
+                                color: Color.fromARGB(255, 201, 160, 220),
                                 offset: Offset(2, 2),
                                 blurRadius: 3.0,
                               ),
@@ -103,9 +103,10 @@ class _LoginState extends State<Login> {
                         controller: emailController,
                         decoration: InputDecoration(
                           hintText: 'Enter Your Email',
-                          labelText: "Email",
-                          prefixIcon: const Icon(Icons.email, color: Color.fromARGB(255, 163, 70, 240)),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                          prefixIcon: const Icon(Icons.email,
+                              color: Color.fromARGB(255, 241, 194, 125)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 20),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -116,7 +117,10 @@ class _LoginState extends State<Login> {
                           color: Colors.white,
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty || !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$").hasMatch(value)) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              !RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                                  .hasMatch(value)) {
                             return "Enter a valid email";
                           }
                           return null;
@@ -130,11 +134,10 @@ class _LoginState extends State<Login> {
                           "Password",
                           style: TextStyle(
                             fontSize: 17,
-                            fontFamily: 'RobotoMono',
                             color: Colors.white,
                             shadows: [
                               Shadow(
-                                color: Color.fromARGB(255, 163, 70, 240),
+                                color: Color.fromARGB(255, 201, 160, 220),
                                 offset: Offset(2, 2),
                                 blurRadius: 3.0,
                               ),
@@ -148,9 +151,10 @@ class _LoginState extends State<Login> {
                         controller: passwordController,
                         decoration: InputDecoration(
                           hintText: 'Enter Your Password',
-                          labelText: "Password",
-                          prefixIcon: const Icon(Icons.lock, color: Color.fromARGB(255, 163, 70, 240)),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+                          prefixIcon: const Icon(Icons.lock,
+                              color: Color.fromARGB(255, 241, 194, 125)),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 20),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
@@ -158,11 +162,12 @@ class _LoginState extends State<Login> {
                         obscureText: true,
                         style: const TextStyle(
                           fontSize: 17,
-                          fontFamily: 'RobotoMono',
                           color: Colors.white,
                         ),
                         validator: (value) {
-                          if (value == null || value.isEmpty || value.length < 6) {
+                          if (value == null ||
+                              value.isEmpty ||
+                              value.length < 6) {
                             return "Enter a valid password (min. 6 characters)";
                           }
                           return null;
@@ -182,7 +187,8 @@ class _LoginState extends State<Login> {
                                     rememberMe = value!;
                                   });
                                 },
-                                activeColor: const Color.fromARGB(255, 163, 70, 240),
+                                activeColor:
+                                    const Color.fromARGB(255, 201, 160, 220),
                               ),
                               const Text(
                                 "Remember Me",
@@ -195,14 +201,15 @@ class _LoginState extends State<Login> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const ForgotPassword(),
+                                  builder: (context) =>
+                                      const ForgotPasswordPage(),
                                 ),
                               );
                             },
                             child: const Text(
                               "Forgot Password?",
                               style: TextStyle(
-                                color: Color.fromARGB(255, 163, 70, 240),
+                                color: Color.fromARGB(255, 93, 58, 109),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -211,57 +218,57 @@ class _LoginState extends State<Login> {
                       ),
                       const SizedBox(height: 20),
                       // Sign In Button
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (_formKey.currentState!.validate()) {
-                            try {
-                              UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-                                email: emailController.text.trim(),
-                                password: passwordController.text.trim(),
-                              );
+                      _isLoading // Show loading indicator if true
+                          ? const CircularProgressIndicator() // Display loading indicator
+                          : ElevatedButton(
+                              onPressed: () async {
+                                try {
+                                  final credential = await FirebaseAuth.instance
+                                      .signInWithEmailAndPassword(
+                                    email: emailController.text,
+                                    password: passwordController.text,
+                                  );
+                                  Navigator.of(context).popAndPushNamed("Home");
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code == 'user-not-found') {
+                                    print('No user found for that email.');
+                                  } else if (e.code == 'wrong-password') {
+                                    print('Wrong password provided.');
+                                  } else if (e.code == 'invalid-credential') {
+                                    print(
+                                        'The supplied auth credential is malformed or has expired.');
+                                  } else {
+                                    print('Error: ${e.message}');
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    const Color.fromARGB(255, 216, 138, 151),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 30, vertical: 15),
+                              ),
+                              child: const Text(
+                                "Sign In",
+                                style: TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                              ),
+                            ),
 
-                              // Store login state if "Remember Me" is checked
-                              if (rememberMe) {
-                                SharedPreferences prefs = await SharedPreferences.getInstance();
-                                await prefs.setString('email', emailController.text.trim());
-                              }
-
-                              // Navigate to Profile screen on successful login
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => const Profile()),
-                              );
-                            } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(e.toString()),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 163, 70, 240),
-                          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        ),
-                        child: const Text(
-                          "Sign In",
-                          style: TextStyle(fontSize: 18, fontFamily: 'RobotoMono'),
-                        ),
-                      ),
                       const SizedBox(height: 20),
                       // Sign Up Link
                       GestureDetector(
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const Register()),
+                            MaterialPageRoute(
+                                builder: (context) => const Register()),
                           );
                         },
                         child: const Text(
                           "Don't have an account? Sign Up",
                           style: TextStyle(
-                            color: Color.fromARGB(255, 163, 70, 240),
+                            color: Color.fromARGB(255, 93, 58, 109),
                             fontWeight: FontWeight.bold,
                           ),
                         ),

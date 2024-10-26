@@ -1,7 +1,10 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
+import 'package:project_app/Login.dart';
 import 'package:project_app/onboarding-builder.dart';
 import 'package:project_app/onboarding-model.dart';
-import 'package:project_app/weeklyscreen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -84,12 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ElevatedButton(
                   onPressed: () {
                     if (currentPage == data.length - 1) {
-                      // If on the last page, navigate to the next screen
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => WeeklyHabitsScreen()),
-                      );
+                      _completeOnboarding();
                     } else {
                       // Otherwise, go to the next page
                       _pageController.nextPage(
@@ -108,6 +106,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _completeOnboarding() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true); // Set the flag
+
+    // Navigate to the home screen
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const Login()),
     );
   }
 }

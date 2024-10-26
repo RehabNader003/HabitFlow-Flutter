@@ -1,10 +1,10 @@
-
 import 'package:flutter/cupertino.dart';
 
-class Monthly extends StatelessWidget{
+class Monthly extends StatelessWidget {
+  const Monthly({super.key});
+
   @override
   Widget build(BuildContext context) {
-    return Text("Monthly page");
+    return const Text("Monthly page");
   }
-
 }

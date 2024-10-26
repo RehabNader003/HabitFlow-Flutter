@@ -2,14 +2,30 @@
 
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:project_app/daily_view.dart';
-import 'package:project_app/monthly_view.dart';
-import 'package:project_app/saveData.dart';
-import 'package:project_app/styles.dart';
-import 'package:project_app/textField_structrue.dart';
+import 'package:project_app/HomePage.dart';
+import 'package:project_app/today.dart';
+import 'daily_view.dart';
+import 'monthly_view.dart';
+import 'saveData.dart';
+import 'styles.dart';
+import 'textField_structrue.dart';
 
 class CreateHabitScreen extends StatefulWidget {
-  const CreateHabitScreen({super.key});
+  final String? taskId;
+  final String? taskName;
+  final Color? taskColor;
+  final String? taskDescription;
+  final String? habitId;
+  final Map<String, dynamic>? habitData;
+
+  const CreateHabitScreen(
+      {super.key,
+      this.habitId,
+      this.habitData,
+      this.taskId,
+      this.taskName,
+      this.taskColor,
+      this.taskDescription});
 
   @override
   _CreateHabitScreenState createState() => _CreateHabitScreenState();
@@ -27,8 +43,34 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
   List<DateTime?> _selectedDates = [];
   List<int> _selectedDays = [];
 
+  String? habitName;
+  String? description;
+  Color? color;
+  String? repeatSchedule;
+  bool? reminder;
+
   TextEditingController nameController = TextEditingController();
   TextEditingController disController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // If editing, pre-fill form with existing habit data
+    if (widget.habitData != null) {
+      nameController.text = widget.habitData!['habitName'] ?? '';
+      disController.text = widget.habitData!['description'] ?? '';
+      screenPickerColor = Color(widget.habitData!['color'] ?? 0xFFFFFFFF);
+      _selectedDays = List<int>.from(widget.habitData!['selectedDays'] ?? []);
+      _selectedDates =
+          List<DateTime?>.from(widget.habitData!['selectedDates'] ?? []);
+      reminderEnabled = widget.habitData!['reminderEnabled'] ?? false;
+      if (widget.habitData!['reminderTime'] != null) {
+        reminderTime =
+            TimeOfDay.fromDateTime(widget.habitData!['reminderTime'].toDate());
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -52,9 +94,16 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Pre-fill controllers with passed data if available
+    if (habitName != null) {
+      nameController.text = habitName!;
+    }
+    if (description != null) {
+      disController.text = description!;
+    }
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create New Habit'),
+        title: Text(widget.habitId != null ? 'Edit Habit' : 'Create New Habit'),
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
@@ -183,8 +232,11 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                           );
                           return;
                         }
-
-                        HabitService.saveHabitToFirestore(
+                        // Save or Update Habit
+                        if (widget.habitId != null) {
+                          // Update existing habit
+                          HabitService.updateHabitInFirestore(
+                            habitId: widget.habitId!,
                             habitName: nameController.text,
                             habitDescription: disController.text,
                             isDaily: currentPage == 0,
@@ -193,23 +245,44 @@ class _CreateHabitScreenState extends State<CreateHabitScreen> {
                             selectedDates: _selectedDates,
                             selectedDays: _selectedDays,
                             reminderEnabled: reminderEnabled,
-                            reminderTime: reminderTime);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Your Habit added sucssefully.")),
-                        );
-                        // Navigator.of(context).pushReplacement(MaterialPageRoute(
-                        //     builder: (context) => const HomePage()));
+                            reminderTime: reminderTime,
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Habit updated successfully.")),
+                          );
+                          Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(
+                                  builder: (context) => const Today()));
+                        } else {
+                          // Create new habit
+                          HabitService.saveHabitToFirestore(
+                              habitName: nameController.text,
+                              habitDescription: disController.text,
+                              isDaily: currentPage == 0,
+                              isMonthly: currentPage == 1,
+                              color: screenPickerColor,
+                              selectedDates: _selectedDates,
+                              selectedDays: _selectedDays,
+                              reminderEnabled: reminderEnabled,
+                              reminderTime: reminderTime);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                                content: Text("Habit created successfully.")),
+                          );
+                        }
+                        // Navigate back to weekly screen
+                        Navigator.of(context).pushReplacement(MaterialPageRoute(
+                            builder: (context) => const HomePage()));
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                              content: Text("Please fill name habit fields.")),
+                              content: Text("Please fill in all fields.")),
                         );
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple,
+                      backgroundColor: const Color(0xFF8985E9),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 40, vertical: 16),
                     ),

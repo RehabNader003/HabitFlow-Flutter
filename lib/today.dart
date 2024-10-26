@@ -1,39 +1,122 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'TaskItem.dart';
+import 'habitDialog.dart';
 
 class Today extends StatefulWidget {
+  const Today({super.key});
+
   @override
   _TodayState createState() => _TodayState();
 }
 
 class _TodayState extends State<Today> {
-  List<QueryDocumentSnapshot> activeTasks = [];
-  List<QueryDocumentSnapshot> completedTasks = [];
+  List<DocumentSnapshot> dailyTasks = [];
+  List<DocumentSnapshot> monthlyTasks = [];
+  List<DocumentSnapshot> completedTasks = [];
 
-  // Fetch data from Firestore
-  getData() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("daily").get();
-    setState(() {
-      // Separate completed and uncompleted tasks
-      activeTasks = querySnapshot.docs.where((task) => !(task['completed'] ?? false)).toList();
-      completedTasks = querySnapshot.docs.where((task) => (task['completed'] ?? false)).toList();
-    });
-  }
-
-  // Function to mark a task as completed
-  markTaskAsCompleted(QueryDocumentSnapshot task) async {
-    await FirebaseFirestore.instance.collection("daily").doc(task.id).update({'completed': true});
-    setState(() {
-      activeTasks.remove(task);
-      completedTasks.add(task);
-    });
-  }
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
   @override
   void initState() {
     super.initState();
-    getData(); // Fetch tasks when widget initializes
+    getData();
+    getCompletedTasks();
+  }
+
+  getData() async {
+    if (userId != null) {
+      DateTime today = DateTime.now();
+      int todayWeekday = today.weekday + 1; // 1 for Monday, 2 for Tuesday, etc.
+      int todayDay = today.day; // Day of the month
+
+      // Fetch daily tasks and filter them by today's weekday
+      QuerySnapshot dailySnapshot = await FirebaseFirestore.instance
+          .collection("daily")
+          .where("user_id", isEqualTo: userId)
+          .get();
+
+      dailyTasks = dailySnapshot.docs.where((task) {
+        List<dynamic> repeatDays = task['repeat_days'] ?? [];
+        return repeatDays.contains(todayWeekday);
+      }).toList();
+
+      // Fetch monthly tasks and filter them by today's day of the month
+      QuerySnapshot monthlySnapshot = await FirebaseFirestore.instance
+          .collection("monthly")
+          .where("user_id", isEqualTo: userId)
+          .get();
+
+      monthlyTasks = monthlySnapshot.docs.where((task) {
+        List<dynamic> repeatDates = task['repeat_dates'] ?? [];
+        return repeatDates.contains(todayDay);
+      }).toList();
+
+      if (mounted) {
+        setState(() {});
+      }
+    } else {
+      print("No user is signed in.");
+    }
+  }
+
+  Future<void> getCompletedTasks() async {
+    if (userId != null) {
+      try {
+        QuerySnapshot completedSnapshot = await FirebaseFirestore.instance
+            .collection("completeTasks")
+            .where("user_id", isEqualTo: userId)
+            .get();
+
+        if (mounted) {
+          setState(() {
+            completedTasks = completedSnapshot.docs;
+          });
+        }
+      } catch (e) {
+        print("Error fetching completed tasks: $e");
+      }
+    }
+  }
+
+  void markTaskAsCompleted(DocumentSnapshot task, String collection) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection(collection)
+          .doc(task.id)
+          .update({'completed': true});
+
+      Map<String, dynamic> taskData = {
+        'task_name': task['task_name'],
+        'description': task['description'],
+        'color': task['color'],
+        'user_id': task['user_id'],
+        'completed': true,
+        'completed_at': FieldValue.serverTimestamp(),
+      };
+
+      if (collection == "daily") {
+        taskData['repeat_days'] = task['repeat_days'];
+      } else if (collection == "monthly") {
+        taskData['repeat_dates'] = task['repeat_dates'];
+      }
+
+      await FirebaseFirestore.instance.collection("completeTasks").add(taskData);
+
+      await FirebaseFirestore.instance.collection(collection).doc(task.id).delete();
+
+      setState(() {
+        if (collection == "daily") {
+          dailyTasks.remove(task);
+        } else if (collection == "monthly") {
+          monthlyTasks.remove(task);
+        }
+        completedTasks.add(task);
+      });
+    } catch (e) {
+      print("Error marking task as completed: $e");
+    }
   }
 
   @override
@@ -41,23 +124,64 @@ class _TodayState extends State<Today> {
     return ListView(
       padding: const EdgeInsets.all(8.0),
       children: [
-        // Display active tasks
-        for (var task in activeTasks)
+        for (var task in dailyTasks)
           TaskItem(
             icon: Icons.track_changes,
-            TaskName: task['task_name'], // Task title from Firestore
-            TaskColor: Color(task['color']), // Task color from Firestore (saved as int)
-            isCompleted: false,
-            onCompletedChanged: (bool? value) {
-              if (value == true) {
-                markTaskAsCompleted(task); // Move to completed section
-              }
+            TaskName: task['task_name'],
+            TaskColor: Color(task['color']),
+            trailing: IconButton(
+              icon: const Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                markTaskAsCompleted(task, "daily");
+              },
+            ),
+            onLongPress: () {
+              HabitOptionsDialog.showHabitOptionsDialog(
+                context,
+                task.id,
+                task['task_name'],
+                    () => HabitOptionsDialog().editHabit(context, task.id, "daily"), // Edit for daily habit
+                    () => HabitOptionsDialog().deleteHabit(context, task.id, "daily"), // Delete for daily habit
+                "daily",
+              );
             },
-          ),
-        SizedBox(height: 10),
 
-        // Divider for Completed Tasks Section
-        Row(
+          ),
+
+        const SizedBox(height: 10),
+
+        for (var task in monthlyTasks)
+          TaskItem(
+            icon: Icons.track_changes,
+            TaskName: task['task_name'],
+            TaskColor: Color(task['color']),
+            trailing: IconButton(
+              icon: const Icon(
+                Icons.check_circle_outline,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                markTaskAsCompleted(task, "monthly");
+              },
+            ),
+            onLongPress: () {
+              HabitOptionsDialog.showHabitOptionsDialog(
+                context,
+                task.id,
+                task['task_name'],
+                    () => HabitOptionsDialog().editHabit(context, task.id, "monthly"), // Edit for monthly habit
+                    () => HabitOptionsDialog().deleteHabit(context, task.id, "monthly"), // Delete for monthly habit
+                "monthly",
+              );
+            },
+
+          ),
+
+        const SizedBox(height: 10),
+        const Row(
           children: <Widget>[
             Text('Completed'),
             SizedBox(width: 10),
@@ -69,16 +193,23 @@ class _TodayState extends State<Today> {
             ),
           ],
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
 
-        // Display completed tasks
-        for (var task in completedTasks)
+        for (var completedTask in completedTasks)
           TaskItem(
             icon: Icons.check_circle,
-            TaskName: task['task_name'], // Task title from Firestore
-            TaskColor: Color(task['color']), // Task color from Firestore (saved as int)
-            isCompleted: true,
-            onCompletedChanged: null, // No action needed for completed tasks
+            TaskName: completedTask['task_name'],
+            TaskColor: Colors.green,
+            onLongPress: () {
+              HabitOptionsDialog.showHabitOptionsDialog(
+                context,
+                completedTask.id,
+                completedTask['task_name'],
+                    () => HabitOptionsDialog().editHabit(context, completedTask.id, "completeTasks"), // Edit for completed task
+                    () => HabitOptionsDialog().deleteHabit(context, completedTask.id, "completeTasks"), // Delete for completed task
+                "completeTasks",
+              );
+            },
           ),
       ],
     );

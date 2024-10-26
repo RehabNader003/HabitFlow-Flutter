@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // استيراد Firebase Auth
-import 'package:tracking_habits/Login.dart';
-import 'package:tracking_habits/Register.dart';
+import 'package:project_app/HomePage.dart';
+import 'package:project_app/Login.dart';
+import 'package:project_app/Register.dart';
 
 class Start extends StatefulWidget {
   const Start({super.key});
@@ -26,7 +27,9 @@ class _StartState extends State<Start> {
       // إذا كان المستخدم موجودًا، انتقل إلى الصفحة الرئيسية
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()), // قم بتعديل HomePage إلى الصفحة الرئيسية الفعلية لديك
+        MaterialPageRoute(
+            builder: (context) =>
+                const HomePage()), // قم بتعديل HomePage إلى الصفحة الرئيسية الفعلية لديك
       );
     }
   }

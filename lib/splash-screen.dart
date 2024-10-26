@@ -1,8 +1,12 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:project_app/HomePage.dart';
+import 'package:project_app/Login.dart';
 import 'package:project_app/onboarding-screen.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,11 +19,30 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Navigate to Profile Page after 3 seconds
-    Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => OnboardingScreen()),
-      );
+    // Navigate based on onboarding completion
+    Timer(const Duration(seconds: 4), () async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      bool hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+      if (hasSeenOnboarding) {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const Login()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+      } else {
+        // Navigate to onboarding screen if not completed
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => OnboardingScreen()),
+        );
+      }
     });
   }
 

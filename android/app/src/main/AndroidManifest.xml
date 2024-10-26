@@ -2,14 +2,20 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT"/>
-     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/> <!-- Add if you need location access -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/> <!-- Add if you need coarse location access -->
+    <uses-permission android:name="android.permission.READ_CONTACTS"/> <!-- Add if you need to read contacts -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/> <!-- Add if you plan to record audio -->
+    
     <application
         android:label="project_app"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
-        
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -27,7 +33,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        
+
         <meta-data
             android:name="flutterEmbedding"
             android:value="2"/>
@@ -44,7 +50,9 @@
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
             </intent-filter>
         </receiver>
-        
+
+      
+
     </application>
 
     <queries>
