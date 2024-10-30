@@ -3,11 +3,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:project_app/HomePage.dart';
-import 'package:project_app/Login.dart';
-import 'package:project_app/Register.dart';
-import 'package:project_app/notification_service_r.dart';
+import 'package:project_app/pages/HomePage.dart';
+import 'package:project_app/pages/Login.dart';
+import 'package:project_app/pages/Register.dart';
+import 'package:project_app/structre/notification_service_r.dart';
 import 'dart:async';
+
+import 'package:project_app/pages/splash-screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,8 +35,6 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     _requestNotificationPermissions();
     _getFirebaseToken();
-    // Test notification directly
-    //  NotificationServiceR.showNotification("Test Notification", "This is a test.");
   }
 
   Future<void> _requestNotificationPermissions() async {
@@ -70,7 +70,7 @@ class _MyAppState extends State<MyApp> {
         "Register": (context) => const Register(),
         "Home": (context) => const HomePage(),
       },
-      home: const Login(),
+      home: const SplashScreen(),
     );
   }
 }
