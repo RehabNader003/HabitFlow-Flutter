@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart'; // Required for Line Chart and FlSpot
+import 'package:fl_chart/fl_chart.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LineChartPage extends StatelessWidget {
-  final String selectedTimeframe; // 'This Week', 'This Month', or 'This Year'
-  final String selectedHabit; // 'Habit 1', 'Habit 2', 'All', etc.
+  final String selectedTimeframe;
+  final String selectedHabit;
 
   LineChartPage({
     required this.selectedTimeframe,
     required this.selectedHabit,
   });
 
+  final String userId = FirebaseAuth.instance.currentUser!.uid;
+
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: 4,
-      color: Colors.white, // Make the background white for better contrast
+      color: Colors.white,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: FutureBuilder<List<FlSpot>>(
@@ -23,10 +27,13 @@ class LineChartPage extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
             }
+            if (snapshot.hasError) {
+              return Center(child: Text("Error: ${snapshot.error}"));
+            }
             if (!snapshot.hasData || snapshot.data!.isEmpty) {
               return Center(
-                  child: Text(
-                      "No data available for the selected habit/timeframe"));
+                child: Text("No data available for the selected habit/timeframe"),
+              );
             }
             return LineChart(
               LineChartData(
@@ -35,28 +42,27 @@ class LineChartPage extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      getTitlesWidget: _getBottomTitles, // X-axis titles
+                      getTitlesWidget: _getBottomTitles,
                     ),
                   ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 28,
-                      getTitlesWidget: _getLeftTitles, // Y-axis titles
+                      getTitlesWidget: _getLeftTitles,
                     ),
                   ),
                 ),
                 borderData: FlBorderData(show: true),
                 lineBarsData: [
                   LineChartBarData(
-                    spots: snapshot.data!, // The spots represent data points
+                    spots: snapshot.data!,
                     isCurved: true,
                     barWidth: 2,
-                    color: Colors.blue, // Replace `colors` with `color`
+                    color: Colors.blue,
                     belowBarData: BarAreaData(
                       show: true,
-                      color: Colors.blue
-                          .withOpacity(0.2), // Replace `colors` with `color`
+                      color: Colors.blue.withOpacity(0.2),
                     ),
                   ),
                 ],
@@ -68,103 +74,202 @@ class LineChartPage extends StatelessWidget {
     );
   }
 
-  // Method to retrieve chart data based on the selected timeframe and habit
   Future<List<FlSpot>> _getChartData(String timeframe, String habit) async {
     List<double> rawData;
 
     if (habit == 'All') {
-      rawData =
-          await _getAllHabitData(timeframe); // Aggregate data for all habits
+      rawData = await _getAllHabitData(timeframe);
     } else {
       rawData = await _getSpecificHabitData(timeframe, habit);
     }
 
     return List<FlSpot>.generate(
       rawData.length,
-      (index) => FlSpot(index.toDouble(), rawData[index]),
+          (index) => FlSpot(index.toDouble(), rawData[index]),
     );
   }
 
-  // Example methods to fetch data from Firestore (replace with your logic)
-  Future<List<double>> _getSpecificHabitData(
-      String timeframe, String habit) async {
-    // Here you would fetch data based on the selected habit and timeframe
-    // Mock data: Replace this with your Firestore query
-    return [5, 8, 6, 7, 9, 10, 8]; // For "This Week" example
+  Future<List<double>> _getSpecificHabitData(String timeframe, String habit) async {
+    DateTime startDate, endDate;
+    final now = DateTime.now();
+
+    switch (timeframe) {
+      case 'This Week':
+        startDate = now.subtract(Duration(days: (now.weekday % 7) + 2));
+        endDate = startDate.add(Duration(days: 6));
+        break;
+      case 'This Month':
+        startDate = DateTime(now.year, now.month, 1);
+        endDate = DateTime(now.year, now.month + 1, 1).subtract(Duration(days: 1));
+        break;
+      case 'This Year':
+        startDate = DateTime(now.year, 1, 1);
+        endDate = DateTime(now.year, 12, 31);
+        break;
+      default:
+        startDate = now;
+        endDate = now;
+    }
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('completeTasks')
+          .where('user_id', isEqualTo: userId)
+          .where('task_name', isEqualTo: habit.toLowerCase())
+          .where('completed_at', isGreaterThanOrEqualTo: startDate)
+          .where('completed_at', isLessThanOrEqualTo: endDate)
+          .orderBy('completed_at')
+          .get();
+
+      List<double> data;
+
+      // Set the size of the data list based on the timeframe
+      if (timeframe == 'This Year') {
+        data = List.filled(12, 0.0); // One for each month
+      } else {
+        data = List.filled(_getDateRangeDaysCount(startDate, endDate), 0.0); // Daily count for other timeframes
+      }
+
+      for (var doc in querySnapshot.docs) {
+        DateTime date = (doc['completed_at'] as Timestamp).toDate();
+        int index;
+
+
+        if (timeframe == 'This Year') {
+          index = date.month - 1; // Months are 1-indexed, adjust to 0-indexed
+        } else {
+          index = date.difference(startDate).inDays;
+        }
+
+        if (index >= 0 && index < data.length) {
+          data[index] += 1;
+        }
+      }
+      return data;
+    } catch (error) {
+      print("Error retrieving specific habit data: $error");
+      rethrow;
+    }
   }
 
   Future<List<double>> _getAllHabitData(String timeframe) async {
-    // Fetch combined data for all habits
-    return [10, 12, 11, 15, 14, 13, 16]; // Example for all habits
+    DateTime startDate, endDate;
+    final now = DateTime.now();
+
+    switch (timeframe) {
+      case 'This Week':
+        startDate = now.subtract(Duration(days: (now.weekday % 7) + 2));
+        endDate = startDate.add(Duration(days: 6));
+        break;
+      case 'This Month':
+        startDate = DateTime(now.year, now.month, 1);
+        endDate = DateTime(now.year, now.month + 1, 1).subtract(Duration(days: 1));
+        break;
+      case 'This Year':
+        startDate = DateTime(now.year, 1, 1);
+        endDate = DateTime(now.year, 12, 31);
+        break;
+      default:
+        startDate = now;
+        endDate = now;
+    }
+
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('completeTasks')
+          .where('user_id', isEqualTo: userId)
+          .where('completed_at', isGreaterThanOrEqualTo: startDate)
+          .where('completed_at', isLessThanOrEqualTo: endDate)
+          .orderBy('completed_at')
+          .get();
+
+      List<double> data;
+
+      // Set the size of the data list based on the timeframe
+      if (timeframe == 'This Year') {
+        data = List.filled(12, 0.0); // One for each month
+      } else {
+        data = List.filled(_getDateRangeDaysCount(startDate, endDate), 0.0); // Daily count for other timeframes
+      }
+
+      for (var doc in querySnapshot.docs) {
+        DateTime date = (doc['completed_at'] as Timestamp).toDate();
+        int index;
+
+        if (timeframe == 'This Year') {
+          index = date.month - 1; // Months are 1-indexed, adjust to 0-indexed
+        } else {
+          index = date.difference(startDate).inDays;
+        }
+
+        if (index >= 0 && index < data.length) {
+          data[index] += 1; // Increment the count for the corresponding day or month
+        }
+      }
+      return data;
+    } catch (error) {
+      print("Error retrieving all habit data: $error");
+      rethrow;
+    }
   }
 
-  // X-axis titles: Adjust this based on the selected timeframe
+  int _getDateRangeDaysCount(DateTime start, DateTime end) {
+    return end.difference(start).inDays + 1;
+  }
+
   Widget _getBottomTitles(double value, TitleMeta meta) {
     const style = TextStyle(fontSize: 12);
     String text;
+
     switch (selectedTimeframe) {
       case 'This Week':
-        // Map X-axis values to days of the week
         switch (value.toInt()) {
           case 0:
-            text = 'Mon';
-            break;
-          case 1:
-            text = 'Tue';
-            break;
-          case 2:
-            text = 'Wed';
-            break;
-          case 3:
-            text = 'Thu';
-            break;
-          case 4:
-            text = 'Fri';
-            break;
-          case 5:
             text = 'Sat';
             break;
-          case 6:
+          case 1:
             text = 'Sun';
+            break;
+          case 2:
+            text = 'Mon';
+            break;
+          case 3:
+            text = 'Tue';
+            break;
+          case 4:
+            text = 'Wed';
+            break;
+          case 5:
+            text = 'Thu';
+            break;
+          case 6:
+            text = 'Fri';
             break;
           default:
             text = '';
         }
         break;
       case 'This Month':
-        // Map X-axis values to weeks of the month
         text = 'Week ${value.toInt() + 1}';
         break;
       case 'This Year':
-        // Map X-axis values to months of the year
         text = [
-          'Jan',
-          'Feb',
-          'Mar',
-          'Apr',
-          'May',
-          'Jun',
-          'Jul',
-          'Aug',
-          'Sep',
-          'Oct',
-          'Nov',
-          'Dec'
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ][value.toInt()];
         break;
       default:
         text = '';
     }
     return SideTitleWidget(
-        child: Text(text, style: style), axisSide: meta.axisSide);
+      child: Text(text, style: style),
+      axisSide: meta.axisSide,
+    );
   }
 
-  // Y-axis titles: Represent the number of habit completions or streaks
   Widget _getLeftTitles(double value, TitleMeta meta) {
     const style = TextStyle(fontSize: 12);
     return SideTitleWidget(
-      child: Text(value.toInt().toString(),
-          style: style), // Show integer values for the Y-axis
+      child: Text(value.toInt().toString(), style: style),
       axisSide: meta.axisSide,
     );
   }

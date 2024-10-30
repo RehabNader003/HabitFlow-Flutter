@@ -15,6 +15,7 @@ class _TodayState extends State<Today> {
   List<DocumentSnapshot> dailyTasks = [];
   List<DocumentSnapshot> monthlyTasks = [];
   List<DocumentSnapshot> completedTasks = [];
+  List<DocumentSnapshot> uncompletedTasks = []; // New list for uncompleted tasks
 
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
@@ -53,11 +54,49 @@ class _TodayState extends State<Today> {
         return repeatDates.contains(todayDay);
       }).toList();
 
+      // Save uncompleted tasks to Firestore
+      await saveUncompletedTasks();
+
       if (mounted) {
         setState(() {});
       }
     } else {
       print("No user is signed in.");
+    }
+  }
+
+  Future<void> saveUncompletedTasks() async {
+    if (userId != null) {
+      try {
+        // Clear existing uncompleted tasks
+        await FirebaseFirestore.instance.collection("uncompleted").where("user_id", isEqualTo: userId).get().then((snapshot) {
+          for (var doc in snapshot.docs) {
+            doc.reference.delete(); // Remove old uncompleted tasks
+          }
+        });
+
+        // Add daily tasks to uncompleted tasks
+        for (var task in dailyTasks) {
+          Map<String, dynamic> taskData = {
+            'task_name': task['task_name'],
+            'date': DateTime.now(),
+            'user_id': userId,
+          };
+          await FirebaseFirestore.instance.collection("uncompleted").add(taskData);
+        }
+
+        // Add monthly tasks to uncompleted tasks
+        for (var task in monthlyTasks) {
+          Map<String, dynamic> taskData = {
+            'task_name': task['task_name'],
+            'date': DateTime.now(),
+            'user_id': userId,
+          };
+          await FirebaseFirestore.instance.collection("uncompleted").add(taskData);
+        }
+      } catch (e) {
+        print("Error saving uncompleted tasks: $e");
+      }
     }
   }
 
@@ -106,6 +145,9 @@ class _TodayState extends State<Today> {
 
       await FirebaseFirestore.instance.collection(collection).doc(task.id).delete();
 
+      // Remove the task from uncompleted collection
+      await removeTaskFromUncompleted(task);
+
       setState(() {
         if (collection == "daily") {
           dailyTasks.remove(task);
@@ -116,6 +158,24 @@ class _TodayState extends State<Today> {
       });
     } catch (e) {
       print("Error marking task as completed: $e");
+    }
+  }
+
+  Future<void> removeTaskFromUncompleted(DocumentSnapshot task) async {
+    if (userId != null) {
+      try {
+        QuerySnapshot snapshot = await FirebaseFirestore.instance
+            .collection("uncompleted")
+            .where("task_name", isEqualTo: task['task_name'])
+            .where("user_id", isEqualTo: userId)
+            .get();
+
+        for (var doc in snapshot.docs) {
+          await doc.reference.delete();
+        }
+      } catch (e) {
+        print("Error removing task from uncompleted: $e");
+      }
     }
   }
 
@@ -148,7 +208,6 @@ class _TodayState extends State<Today> {
                 "daily",
               );
             },
-
           ),
 
         const SizedBox(height: 10),
@@ -177,7 +236,6 @@ class _TodayState extends State<Today> {
                 "monthly",
               );
             },
-
           ),
 
         const SizedBox(height: 10),

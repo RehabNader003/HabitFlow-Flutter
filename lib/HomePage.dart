@@ -36,10 +36,10 @@ class _HomePageState extends State<HomePage>
     if (user != null) {
       try {
         DocumentSnapshot snapshot =
-            await _firestore.collection('users').doc(user.uid).get();
+        await _firestore.collection('users').doc(user.uid).get();
         setState(() {
           userData =
-              snapshot.data() as Map<String, dynamic>?; // Storing user data
+          snapshot.data() as Map<String, dynamic>?; // Storing user data
         });
       } catch (e) {
         print('Error fetching user data: $e'); // Handle errors if needed
@@ -67,48 +67,48 @@ class _HomePageState extends State<HomePage>
     return Scaffold(
       appBar: _selectedIndex == 0 // Show app bar only for the Home page
           ? AppBar(
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {},
-                ),
-              ],
-              leading: const Icon(Icons.checklist),
-              centerTitle: true,
-              title: const Text(
-                "Home",
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-              bottom: _selectedIndex == 0
-                  ? TabBar(
-                      indicator: BoxDecoration(
-                        color: const Color(0xFFBA68C8),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      controller: _tabController,
-                      tabs: const [
-                        Tab(text: '     Today      '),
-                        Tab(text: '     Weekly     '),
-                      ],
-                    )
-                  : null, // Remove TabBar on other pages
-            )
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {},
+          ),
+        ],
+        leading: const Icon(Icons.checklist),
+        centerTitle: true,
+        title: const Text(
+          "Home",
+          style:
+          TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        bottom: _selectedIndex == 0
+            ? TabBar(
+          indicator: BoxDecoration(
+            color: const Color(0xFFBA68C8),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '     Today      '),
+            Tab(text: '     Weekly     '),
+          ],
+        )
+            : null, // Remove TabBar on other pages
+      )
           : null, // No app bar for other pages
       body: _selectedIndex == 0
           ? TabBarView(
-              controller: _tabController,
-              children: [
-                const Today(),
-                WeeklyHabitsScreen(),
-              ],
-            )
+        controller: _tabController,
+        children: [
+          const Today(),
+          WeeklyHabitsScreen(),
+        ],
+      )
           : Padding(
-              padding:
-                  const EdgeInsets.only(top: 20.0), // Add space from the top
-              child: _pages[
-                  _selectedIndex], // Display the page based on selected tab
-            ),
+        padding:
+        const EdgeInsets.only(top: 20.0), // Add space from the top
+        child: _pages[
+        _selectedIndex], // Display the page based on selected tab
+      ),
 
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.purple,
@@ -132,17 +132,17 @@ class _HomePageState extends State<HomePage>
       ),
       floatingActionButton: _selectedIndex == 0
           ? FloatingActionButton(
-              onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => const CreateHabitScreen()));
-              },
-              backgroundColor: const Color(0xFFBA68C8),
-              shape: const CircleBorder(),
-              child: const Icon(
-                Icons.add,
-                size: 30,
-              ),
-            )
+        onPressed: () {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => const CreateHabitScreen()));
+        },
+        backgroundColor: const Color(0xFFBA68C8),
+        shape: const CircleBorder(),
+        child: const Icon(
+          Icons.add,
+          size: 30,
+        ),
+      )
           : const SizedBox.shrink(),
     );
   }

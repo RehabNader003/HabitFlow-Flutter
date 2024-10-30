@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'line_chart_page.dart'; // Import the LineChartPage
 import 'package:cloud_firestore/cloud_firestore.dart'; // Required for Firebase collections
+import 'package:firebase_auth/firebase_auth.dart'; // Required for user authentication
 
 class Chartpage extends StatefulWidget {
   @override
@@ -17,6 +18,8 @@ class _ChartpageState extends State<Chartpage> {
   int uncompletedHabits = 0; // Number of uncompleted habits
   double completionRate = 0.0; // Completion rate in percentage
 
+  final String userId = FirebaseAuth.instance.currentUser!.uid; // Get current user ID
+
   @override
   void initState() {
     super.initState();
@@ -25,7 +28,6 @@ class _ChartpageState extends State<Chartpage> {
   }
 
   Future<void> _fetchHabits() async {
-    // Fetch unique task names from the completeTasks collection
     var habits = await _getUniqueHabits();
     if (mounted) {
       setState(() {
@@ -39,11 +41,11 @@ class _ChartpageState extends State<Chartpage> {
   }
 
   Future<List<String>> _getUniqueHabits() async {
-    // Fetch unique task names from Firestore
-    final QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection('completeTasks').get();
+    final QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('completeTasks')
+        .where('user_id', isEqualTo: userId)
+        .get();
 
-    // Extract unique habit names
     final Set<String> habitSet = {};
     for (var doc in querySnapshot.docs) {
       habitSet.add(doc['task_name']);
@@ -52,12 +54,15 @@ class _ChartpageState extends State<Chartpage> {
   }
 
   Future<void> _fetchStatistics() async {
-    // Fetch total habits (completed + uncompleted) and completion rate
-    final QuerySnapshot completedSnapshot =
-        await FirebaseFirestore.instance.collection('completeTasks').get();
+    final QuerySnapshot completedSnapshot = await FirebaseFirestore.instance
+        .collection('completeTasks')
+        .where('user_id', isEqualTo: userId)
+        .get();
 
-    final QuerySnapshot uncompletedSnapshot =
-        await FirebaseFirestore.instance.collection('uncompletedTasks').get();
+    final QuerySnapshot uncompletedSnapshot = await FirebaseFirestore.instance
+        .collection('uncompletedTasks')
+        .where('user_id', isEqualTo: userId)
+        .get();
 
     int completedCount = completedSnapshot.docs.length;
     int uncompletedCount = uncompletedSnapshot.docs.length;
@@ -67,15 +72,14 @@ class _ChartpageState extends State<Chartpage> {
       totalHabits = totalCount;
       completedHabits = completedCount;
       uncompletedHabits = uncompletedCount;
-      completionRate =
-          totalCount > 0 ? (completedCount / totalCount) * 100 : 0.0;
+      completionRate = totalCount > 0 ? (completedCount / totalCount) * 100 : 0.0;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200], // Light background color
+      backgroundColor: Colors.grey[200],
       body: Column(
         children: [
           const Padding(
@@ -90,7 +94,6 @@ class _ChartpageState extends State<Chartpage> {
               ),
             ),
           ),
-          // Card-based stats for better visuals
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -122,9 +125,7 @@ class _ChartpageState extends State<Chartpage> {
               ],
             ),
           ),
-
           SizedBox(height: 16),
-          // Add DropdownButton for Timeframe Selection
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -152,25 +153,23 @@ class _ChartpageState extends State<Chartpage> {
                 },
                 items: _habits.isNotEmpty
                     ? _habits.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList()
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList()
                     : [],
               ),
             ],
           ),
           SizedBox(height: 16),
-          // Expanded widget to increase chart size
           Expanded(
-            flex: 2, // Increase the chart area size
+            flex: 2,
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: LineChartPage(
-                selectedTimeframe:
-                    _selectedTimeframe, // Pass selected timeframe parameter
-                selectedHabit: _selectedHabit, // Pass selected habit parameter
+                selectedTimeframe: _selectedTimeframe,
+                selectedHabit: _selectedHabit,
               ),
             ),
           ),
@@ -190,15 +189,15 @@ class _ChartpageState extends State<Chartpage> {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-            vertical: 10, horizontal: 10), // Reduce padding for smaller boxes
+            vertical: 10, horizontal: 10),
         child: Column(
           children: [
-            Icon(icon, size: 24, color: color), // Smaller icon
+            Icon(icon, size: 24, color: color),
             SizedBox(height: 8),
             Text(
               title,
               style: TextStyle(
-                  fontSize: 14, color: Colors.grey[800]), // Smaller title text
+                  fontSize: 14, color: Colors.grey[800]),
             ),
             SizedBox(height: 5),
             Text(
@@ -206,7 +205,7 @@ class _ChartpageState extends State<Chartpage> {
               style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: color), // Smaller value text
+                  color: color),
             ),
           ],
         ),

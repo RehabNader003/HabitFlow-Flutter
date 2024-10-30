@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+import 'notification_service_r.dart';
 
 class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
@@ -69,6 +73,8 @@ class NotificationHandler {
     tz.initializeTimeZones();
   }
 
+
+
   static Future<void> scheduleNotification(
       String title, String body, int id, TimeOfDay timeOfDay) async {
     // Check if it's AM or PM and append it to the body
@@ -121,3 +127,4 @@ class NotificationHandler {
     _notification.show(id, title, body, notificationDetails);
   }
 }
+
