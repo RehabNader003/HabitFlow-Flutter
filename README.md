@@ -8,9 +8,7 @@
 - **Habit Tracking**: Create, edit, and delete habits with customizable settings (frequency, reminders, etc.).
 - **User Dashboard**: Personalized dashboard displaying active habits, completion rates, and streaks.
 - **Notifications**: Push notifications to keep users reminded of their habits.
-- **Media Upload**: Option to upload images and videos as part of habit tracking.
-- **Analytics and Insights**: Visual progress tracking with analytics to view trends and improvements over time.
-- **Settings**: Customizable preferences for notifications, themes, and data privacy.
+- **Media Upload**: Option to upload image for your profile.
 
 ## Installation
 
